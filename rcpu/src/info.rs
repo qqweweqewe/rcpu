@@ -1,39 +1,35 @@
 pub mod cpu {
+    use crate::error::RcpuError;
     use std::fs;
-    use std::io;
     use std::thread;
     use std::time::Duration;
     
     const STAT_PATH: &'static str = "/proc/stat";
 
-    fn get_data() -> io::Result<(u64, u64)> {
+    fn get_data() -> Result<(u64, u64), RcpuError> {
+
         // read the file, omit the 'cpu', take 10 values it has
-        // reference: 
-        let values: Vec<u64> = fs::read_to_string(STAT_PATH)
-            .expect("")
+        // reference: https://www.man7.org/linux/man-pages/man5/proc_stat.5.html
+        let values: Vec<u64> = fs::read_to_string(STAT_PATH)?
             .split_whitespace()
             .skip(1)
             .take(10)
             .map(|e| e.parse::<u64>().unwrap())
             .collect();
         
-        println!("{:?}\n", values);
-
         // idle + iowait
         let idle: u64 = values[3] + values[4];
 
         // total
         let total: u64 = values.iter().sum();
 
-        println!("idle: {}\ntotal: {}", &idle, &total);
-
         Ok((total, idle))
     }
 
-    pub fn get_cpu_load() -> Result<i32, Box<dyn std::error::Error>> {
+    pub fn get_load() -> Result<i32, RcpuError> {
         // get cpu stats at two moments of time
         let (prev_total, prev_idle) = get_data()?;
-        thread::sleep(Duration::from_millis(1000)); // poll interval
+        thread::sleep(Duration::from_millis(100)); // poll interval
         let (curr_total, curr_idle) = get_data()?;
 
         let total_diff = curr_total - prev_total;
