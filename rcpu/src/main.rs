@@ -29,14 +29,20 @@ async fn ram() -> Json<Response> {
 
 #[tokio::main]
 async fn main() {
-    let app = Router::new()
-        .route("/cpu", get(cpu))
-        .route("/ram", get(ram));
+    // let app = Router::new()
+    //     .route("/cpu", get(cpu))
+    //     .route("/ram", get(ram));
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
-        .await
-        .unwrap();
+    // let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+    //     .await
+    //     .unwrap();
     
-    println!("Server running on http://{}", listener.local_addr().unwrap());
-    axum::serve(listener, app).await.unwrap();
+    // println!("Server running on http://{}", listener.local_addr().unwrap());
+    // axum::serve(listener, app).await.unwrap();
+
+    for i in (0..5) {
+        println!("---------------");
+        let load = info::cpu::get_cpu_load().unwrap();
+        println!("LOAD: {:?}%", load)
+    }
 }
