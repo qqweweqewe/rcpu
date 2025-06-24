@@ -18,7 +18,8 @@ pub mod cpu {
             .collect();
         
         // idle + iowait
-        let idle: u64 = values[3] + values[4];
+        let idle: u64 = values.get(3).ok_or_else(|| RcpuError::Cpu("Invalid idle time kernel data"))? 
+                        + values.get(4).ok_or_else(|| RcpuError::Cpu("Invalid iowait time kernel data"))?;
 
         // total
         let total: u64 = values.iter().sum();
@@ -61,7 +62,7 @@ pub mod ram {
             .collect();
 
         // get the number itself
-        let free: u32 = values.pop().unwrap()
+        let free: u32 = values.pop().ok_or_else(|| RcpuError::Ram("Invalid kernel data: possibly empty `/proc/meminfo`"))?
             .split_whitespace()
             .filter_map(|p| match p.parse::<u32>() {
                 Ok(val) => Some(val),
@@ -70,7 +71,7 @@ pub mod ram {
             .collect::<Vec<u32>>()[1];
 
         // get the number itself
-        let total: u32 = values.pop().unwrap()
+        let total: u32 = values.pop().ok_or_else(|| RcpuError::Ram("Invalid kernel data: possibly empty `/proc/meminfo`"))?
             .split_whitespace()
             .filter_map(|p| match p.parse::<u32>() {
                 Ok(val) => Some(val),
