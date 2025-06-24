@@ -54,30 +54,21 @@ pub mod ram {
     const MEMINFO_PATH: &'static str = "/proc/meminfo";
 
     fn get_data() -> Result<(u32, u32), RcpuError> {
-        // get the first two lines - MemTotal and MemFree
-        let mut values: Vec<String> = fs::read_to_string(MEMINFO_PATH)?
-            .lines()
-            .take(2)
-            .map(|s| s.to_string())
-            .collect();
-
-        // get the number itself
-        let free: u32 = values.pop().ok_or_else(|| RcpuError::Ram("Invalid kernel data: possibly empty `/proc/meminfo`"))?
-            .split_whitespace()
-            .filter_map(|p| match p.parse::<u32>() {
-                Ok(val) => Some(val),
-                Err(_) => None
-            })
-            .collect::<Vec<u32>>()[0];
-
-        // get the number itself
-        let total: u32 = values.pop().ok_or_else(|| RcpuError::Ram("Invalid kernel data: possibly empty `/proc/meminfo`"))?
-            .split_whitespace()
-            .filter_map(|p| match p.parse::<u32>() {
-                Ok(val) => Some(val),
-                Err(_) => None
-            })
-            .collect::<Vec<u32>>()[0];
+        
+        // read ram data
+        let data = fs::read_to_string(MEMINFO_PATH)?;
+        let mut total = 1;
+        let mut free = 0;
+        
+        // find every needed line, assign values
+        for line in data.lines() {
+            let split = line.split_whitespace().collect::<Vec<&str>>();
+            match split.get(0).copied().ok_or_else(|| RcpuError::Ram("Invalid kernel data"))? {
+                "MemTotal:" => total = split[1].parse()?,
+                "MemAvailable:" => free = split[1].parse()?,
+                _ => {}
+            }
+        }
 
         Ok((free, total))
     }
