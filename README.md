@@ -1,4 +1,5 @@
 # RCPU - Remote System Monitor API
+## Single endpoint branch
 
 [![Rust](https://img.shields.io/badge/Rust-1.72%2B-orange?logo=rust)](https://www.rust-lang.org/)
 [![Axum](https://img.shields.io/badge/Web%20Framework-Axum-blue)](https://github.com/tokio-rs/axum)
@@ -41,11 +42,13 @@ cargo build --release
 cargo run --release
 
 # Test CPU monitoring (terminal mode)
-curl http://localhost:3000/cpu
-# Sample response: {"message":"42"}
-
-# Test RAM endpoint (WIP)
-curl http://localhost:3000/ram
+curl http://localhost:3000/stats
+# Sample response: 
+# {
+#   "cpu":"43",
+#   "ram":"68",
+#   "err":null
+# }
 ```
 
 ## API Reference 📖
@@ -54,8 +57,7 @@ curl http://localhost:3000/ram
 
 | Endpoint | Method | Description                | Response Format        |
 |----------|--------|----------------------------|------------------------|
-| `/cpu`   | GET    | Get current CPU load %     | `{"msg": "42"}`        |
-| `/ram`   | GET    | Get RAM usage              | `{"msg": "32"}`        |
+| `/stats` | GET    | Get current CPU load %     | `{"cpu": "42", "ram": "36", "err": null}`      |
 
 ## Technical Implementation 🔧
 
@@ -70,13 +72,20 @@ curl http://localhost:3000/ram
    usage = 100 - (Δidle_time / Δtotal_time) * 100
    ```
 
+### RAM Polling algorithm
+1. Read `/proc/meminfo` and parse RAM data
+2. Compute percentage:
+   ```
+   usage = 100 - ( free / used ) * 100
+   ```
+
 ### Project Structure
 ```
 src/
 ├── main.rs         # API server implementation
 ├── info.rs         # System monitoring core
 │   ├── cpu::get_cpu_load()  # CPU load calculation
-│   └── ram          # RAM module (WIP)
+│   └── ram::get_busy()      # RAM module
 ```
 
 ## Roadmap 🗺️

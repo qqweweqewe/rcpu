@@ -19,7 +19,9 @@ impl IntoResponse for RcpuError {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(crate::Response {
-                msg: "Internal Server Error".to_string(),
+                cpu: None,
+                ram: None,
+                err: Some(format!("Internal Server Error: {}", self)),
             })
         ).into_response()
     }

@@ -12,30 +12,27 @@ use crate::error::RcpuError;
 
 #[derive(Serialize)]
 struct Response {
-    msg: String,
+    cpu: Option<String>,
+    ram: Option<String>,
+    err: Option<String>
 }
 
-// GET "/cpu"
-async fn cpu() -> Result<Json<Response>, RcpuError> {
-    let load = info::cpu::get_load()?;
-    Ok(Json(Response {
-        msg: format!("{}", load),
-    }))
-}
+// GET "/stats"
+async fn stats() -> Result<Json<Response>, RcpuError> {
+    let cpu_load = info::cpu::get_load()?;
+    let ram_used = info::ram::get_busy()?;
 
-// GET "/ram"
-async fn ram() -> Result<Json<Response>, RcpuError> {
-    let mem = info::ram::get_busy()?;
     Ok(Json(Response {
-        msg: format!("{}", mem),
+        cpu: Some(format!("{}", cpu_load)),
+        ram: Some(format!("{}", ram_used)),
+        err: None
     }))
 }
 
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-        .route("/cpu", get(cpu))
-        .route("/ram", get(ram));
+        .route("/stats", get(stats));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await
