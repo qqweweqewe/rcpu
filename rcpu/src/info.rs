@@ -68,7 +68,7 @@ pub mod ram {
                 Ok(val) => Some(val),
                 Err(_) => None
             })
-            .collect::<Vec<u32>>()[1];
+            .collect::<Vec<u32>>()[0];
 
         // get the number itself
         let total: u32 = values.pop().ok_or_else(|| RcpuError::Ram("Invalid kernel data: possibly empty `/proc/meminfo`"))?
@@ -77,7 +77,7 @@ pub mod ram {
                 Ok(val) => Some(val),
                 Err(_) => None
             })
-            .collect::<Vec<u32>>()[1];
+            .collect::<Vec<u32>>()[0];
 
         Ok((free, total))
     }
