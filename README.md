@@ -10,7 +10,8 @@ A lightweight API server for monitoring system resources (CPU/RAM) built in Rust
 - **Real-time CPU Load Monitoring**
   - Precise CPU usage calculation
   - Accurate kernel statistics using `/proc/stat`
-- **Memory Monitoring** (Coming Soon)
+- **Memory Monitoring**
+  - Multi-parameter monitoring (coming soon)
 - **RESTful API Endpoints**
   - Simple JSON responses
   - Built with Axum framework
@@ -53,8 +54,8 @@ curl http://localhost:3000/ram
 
 | Endpoint | Method | Description                | Response Format        |
 |----------|--------|----------------------------|------------------------|
-| `/cpu`   | GET    | Get current CPU load %     | `{"message": "42"}`    |
-| `/ram`   | GET    | Get RAM usage (WIP)        | `{"message": "WIP"}`   |
+| `/cpu`   | GET    | Get current CPU load %     | `{"msg": "42"}`        |
+| `/ram`   | GET    | Get RAM usage              | `{"msg": "32"}`        |
 
 ## Technical Implementation 🔧
 
