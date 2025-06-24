@@ -13,8 +13,9 @@ A lightweight API server for monitoring system resources (CPU/RAM) built in Rust
   - Accurate kernel statistics using `/proc/stat`
 - **Memory Monitoring**
   - Multi-parameter monitoring (coming soon)
-- **RESTful API Endpoints**
+- **Convenient API interaction**
   - Simple JSON responses
+  - Verbosity controlled with query parameters
   - Built with Axum framework
 - **Efficient Resource Usage**
   - Low memory footprint
