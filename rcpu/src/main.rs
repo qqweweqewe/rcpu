@@ -24,10 +24,11 @@ async fn cpu() -> Result<Json<Response>, RcpuError> {
 }
 
 // GET "/ram"
-async fn ram() -> Json<Response> {
-    Json(Response {
-        msg: "WIP".to_string(),
-    })
+async fn ram() -> Result<Json<Response>, RcpuError> {
+    let mem = info::ram::get_busy()?;
+    Ok(Json(Response {
+        msg: format!("{}", mem),
+    }))
 }
 
 #[tokio::main]
