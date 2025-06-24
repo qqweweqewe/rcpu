@@ -82,7 +82,7 @@ src/
 ## Roadmap 🗺️
 
 - [x] Core CPU monitoring
-- [ ] RAM usage and other info implementation
+- [x] RAM usage implementation
 - [ ] Systemd service integration
 - [ ] Docker container support
 - [ ] ESP8266 client example
