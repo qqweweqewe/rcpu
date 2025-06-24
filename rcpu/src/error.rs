@@ -8,7 +8,9 @@ pub enum RcpuError {
     #[error("CPU Info parse error: {0}")]
     Cpu(&'static str),
     #[error("RAM Info parse error: {0}")]
-    Ram(&'static str)
+    Ram(&'static str),
+    #[error("Integer parse error: {0}")]
+    ParseError(#[from] std::num::ParseIntError)
 }
 
 impl IntoResponse for RcpuError {
