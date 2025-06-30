@@ -10,8 +10,8 @@ pub enum RcpuError {
     Cpu(&'static str),
     #[error("RAM Info parse error: {0}")]
     Ram(&'static str),
-    #[error("Memory check exited with non-zero exit code")]
-    Disk,
+    #[error("Memory check exited with non-zero exit code: {0}")]
+    Disk(i32),
     #[error("Integer parse error: {0}")]
     ParseError(#[from] std::num::ParseIntError),
     #[error("Interior nul byte found: {0}")]

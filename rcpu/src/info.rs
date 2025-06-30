@@ -102,7 +102,7 @@ pub mod disk {
             let free = stat.f_bfree * block_size;
             Ok((total, free))
         } else {
-            Err(RcpuError::Disk)
+            Err(RcpuError::Disk(result))
         }
     }
 
