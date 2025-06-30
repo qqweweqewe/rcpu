@@ -80,3 +80,40 @@ pub mod ram {
         Ok((100 - free*100/total) as u8)
     }
 }
+
+pub mod disk {
+    use crate::error::RcpuError;
+    // TODO: implement actual passing
+    fn get_disk_usage(path: Option<&str>) -> Result<(u64, u64), RcpuError> {
+        let act_path = match path {
+            Some(path) => path,
+            None => "/"
+        };
+
+        let c_path = std::ffi::CString::new(act_path)?;
+        let mut stat: libc::statvfs = unsafe { std::mem::zeroed() };
+
+        // execute syscall
+        let result = unsafe { libc::statvfs(c_path.as_ptr() as *const libc::c_char, &mut stat) };
+
+        if result == 0 {
+            let block_size = stat.f_frsize as u64; // fundamental block size
+            let total = stat.f_blocks * block_size;
+            let free = stat.f_bfree * block_size;
+            Ok((total, free))
+        } else {
+            Err(RcpuError::Disk)
+        }
+    }
+
+    pub fn percentage() -> Result<u8, RcpuError> {
+        let (total, free) = get_disk_usage(None)?;
+        
+        Ok((100 - (free*100/total)) as u8)
+    }
+
+    pub fn bytes() -> Result<(u64, u64), RcpuError> {
+        let (total, free) = get_disk_usage(None)?;
+        Ok((total, total-free))
+    }
+}
