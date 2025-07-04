@@ -1,0 +1,17 @@
+[Unit]
+Description=Remote Monitoring Service
+After=network.target
+
+[Service]
+Type=simple
+User=rcpu
+ExecStart=/usr/local/bin/rcpu
+Restart=on-failure
+RestartSec=5s
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

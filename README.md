@@ -36,14 +36,19 @@ A lightweight API server for monitoring system resources (CPU/RAM/Disk) built in
 ```bash
 git clone https://github.com/qqweweqewe/rcpu.git
 cd rcpu
-cargo build --release
+./install.sh
 ```
 
 ### Usage
 
 ```bash
-# Run the server
+# Run the server manually
 cargo run --release
+
+# Or start the systemd service (not enabled by default)
+sudo systemctl start rcpu
+# Check if started
+sudo systemctl status rcpu
 
 # Test CPU monitoring
 curl http://localhost:3000/cpu
@@ -111,7 +116,7 @@ src/
 - [x] Core CPU monitoring
 - [x] RAM usage implementation
 - [x] Disk monitoring
-- [ ] Systemd service integration
+- [x] Systemd service integration
 - [ ] Docker container support
 - [ ] ESP8266 client example
 - [ ] Authentication support
