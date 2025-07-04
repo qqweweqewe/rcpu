@@ -60,7 +60,10 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await
-        .unwrap();
+        .unwrap_or_else(|e| {
+            eprintln!("FATAL: Failed to bind port 3000: {e}");
+            std::process::exit(1)
+        });
     
     println!("Server running on http://{}", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
