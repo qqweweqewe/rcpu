@@ -12,7 +12,7 @@ use crate::error::RcpuError;
 async fn cpu() -> Result<Json<Value>, RcpuError> {
     Ok(Json(json!(
         {
-            "cpu": info::cpu::get_load()?
+            "cpu": info::cpu::get_load().await?
         }
     )))
 }
@@ -21,7 +21,7 @@ async fn cpu() -> Result<Json<Value>, RcpuError> {
 async fn ram() -> Result<Json<Value>, RcpuError> {
     Ok(Json(json!(
         {
-            "ram": info::ram::get_busy()?
+            "ram": info::ram::get_busy().await?
         }
     )))
 
@@ -34,12 +34,12 @@ async fn disk(Path(format): Path<String>) -> Result<Json<Value>, RcpuError> {
         "percentage" => {
             Ok(Json(json!(
                 { 
-                    "percentage": info::disk::percentage()? 
+                    "percentage": info::disk::percentage().await? 
                 }
             )))
         }
         "bytes" => {
-            let (total, used) = info::disk::bytes()?;
+            let (total, used) = info::disk::bytes().await?;
             Ok(Json(json!(
                 { 
                     "used": used, 

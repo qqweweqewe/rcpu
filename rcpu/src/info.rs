@@ -1,16 +1,16 @@
 pub mod cpu {
     use crate::error::RcpuError;
-    use std::fs;
-    use std::thread;
-    use std::time::Duration;
-    
+    use tokio::fs; // Changed to tokio's fs
+    use tokio::time::{sleep, Duration}; // Changed to tokio's sleep
+
     const STAT_PATH: &'static str = "/proc/stat";
 
-    fn get_data() -> Result<(u64, u64), RcpuError> {
+    async fn get_data() -> Result<(u64, u64), RcpuError> {
 
         // read the file, omit the 'cpu', take 10 values it has
         // reference: https://www.man7.org/linux/man-pages/man5/proc_stat.5.html
-        let values: Vec<u64> = fs::read_to_string(STAT_PATH)?
+        let contents = fs::read_to_string(STAT_PATH).await?;
+        let values: Vec<u64> = contents
             .split_whitespace()
             .skip(1)
             .take(10)
@@ -27,11 +27,11 @@ pub mod cpu {
         Ok((total, idle))
     }
 
-    pub fn get_load() -> Result<u8, RcpuError> {
+    pub async fn get_load() -> Result<u8, RcpuError> {
         // get cpu stats at two moments of time
-        let (prev_total, prev_idle) = get_data()?;
-        thread::sleep(Duration::from_millis(100)); // poll interval
-        let (curr_total, curr_idle) = get_data()?;
+        let (prev_total, prev_idle) = get_data().await?;
+        sleep(Duration::from_millis(100)).await; // poll interval
+        let (curr_total, curr_idle) = get_data().await?;
 
         let total_diff = curr_total - prev_total;
         let idle_diff = curr_idle - prev_idle;
@@ -49,14 +49,14 @@ pub mod cpu {
 
 pub mod ram {
     use crate::error::RcpuError;
-    use std::fs;
+    use tokio::fs;
 
     const MEMINFO_PATH: &'static str = "/proc/meminfo";
 
-    fn get_data() -> Result<(u32, u32), RcpuError> {
+    async fn get_data() -> Result<(u32, u32), RcpuError> {
         
         // read ram data
-        let data = fs::read_to_string(MEMINFO_PATH)?;
+        let data = fs::read_to_string(MEMINFO_PATH).await?;
         let mut total = 1;
         let mut free = 0;
         
@@ -73,8 +73,8 @@ pub mod ram {
         Ok((free, total))
     }
 
-    pub fn get_busy() -> Result<u8, RcpuError>{
-        let (free, total) = get_data()?;
+    pub async fn get_busy() -> Result<u8, RcpuError>{
+        let (free, total) = get_data().await?;
 
         // do I really need to explain this one?
         Ok((100 - free*100/total) as u8)
@@ -83,37 +83,39 @@ pub mod ram {
 
 pub mod disk {
     use crate::error::RcpuError;
+    use tokio::task;
     // TODO: implement actual passing
-    fn get_disk_usage(path: Option<&str>) -> Result<(u64, u64), RcpuError> {
-        let act_path = match path {
-            Some(path) => path,
-            None => "/"
-        };
+    async fn get_disk_usage(_path: Option<&str>) -> Result<(u64, u64), RcpuError> {
 
-        let c_path = std::ffi::CString::new(act_path)?;
-        let mut stat: libc::statvfs = unsafe { std::mem::zeroed() };
+        task::spawn_blocking(move || {
+            let act_path = "/";
 
-        // execute syscall
-        let result = unsafe { libc::statvfs(c_path.as_ptr() as *const libc::c_char, &mut stat) };
+            let c_path = std::ffi::CString::new(act_path)?;
+            let mut stat: libc::statvfs = unsafe { std::mem::zeroed() };
 
-        if result == 0 {
-            let block_size = stat.f_frsize as u64; // fundamental block size
-            let total = stat.f_blocks * block_size;
-            let free = stat.f_bfree * block_size;
-            Ok((total, free))
-        } else {
-            Err(RcpuError::Disk(result))
-        }
+            // execute syscall
+            let result = unsafe { libc::statvfs(c_path.as_ptr() as *const libc::c_char, &mut stat) };
+
+            if result == 0 {
+                let block_size = stat.f_frsize as u64; // fundamental block size
+                let total = stat.f_blocks * block_size;
+                let free = stat.f_bfree * block_size;
+                Ok((total, free))
+            } else {
+                Err(RcpuError::Disk(result))
+            }
+        }).await.map_err(|_| RcpuError::Disk(-1))?
+        
     }
 
-    pub fn percentage() -> Result<u8, RcpuError> {
-        let (total, free) = get_disk_usage(None)?;
+    pub async fn percentage() -> Result<u8, RcpuError> {
+        let (total, free) = get_disk_usage(None).await?;
         
         Ok((100 - (free*100/total)) as u8)
     }
 
-    pub fn bytes() -> Result<(u64, u64), RcpuError> {
-        let (total, free) = get_disk_usage(None)?;
+    pub async fn bytes() -> Result<(u64, u64), RcpuError> {
+        let (total, free) = get_disk_usage(None).await?;
         Ok((total, total-free))
     }
 }
