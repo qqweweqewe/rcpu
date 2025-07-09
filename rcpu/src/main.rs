@@ -56,7 +56,7 @@ async fn main() {
     let app = Router::new()
         .route("/cpu", get(cpu))
         .route("/ram", get(ram))
-        .route("/disk", get(disk));
+        .route("/disk/:format", get(disk));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await
